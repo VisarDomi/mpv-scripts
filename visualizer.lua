@@ -45,6 +45,7 @@ local axis_0 = "image/png;base64," ..
 local visualizer_on = false
 local file_path = nil
 local playback_position = 0
+local opacity_level = 0 -- New variable to keep track of the opacity level
 
 local function cycle_visualizer()
     local width = mp.get_property_native("width")
@@ -52,12 +53,28 @@ local function cycle_visualizer()
     local fps = mp.get_property_native("display-fps")
     local count = math.ceil(width * 180 / 1920 / fps)
 
-    visualizer_on = not visualizer_on
+    opacity_level = (opacity_level + 1) % 6 -- Increment and cycle the opacity level
 
-    if visualizer_on then
+    if opacity_level == 0 then
+        -- Turn off the visualizer
+        visualizer_on = false
+        if file_path then
+            -- Load the video from the beginning
+            mp.commandv("loadfile", file_path, "replace")
+            mp.set_property_number("time-pos", playback_position)
+
+            -- Delayed removal of the filter
+            mp.add_timeout(0.1, function()
+                mp.set_property("options/lavfi-complex", "")
+            end)
+        end
+    else
+        -- Calculate the opaqueness percentage
+        local opacity = opacity_level * 20 / 100
+
+        visualizer_on = true
         file_path = mp.get_property("path")
         playback_position = mp.get_property_number("time-pos")
-
         local lavfi = "[aid1] asplit [ao][a];" ..
                     "[a] afifo" ..
                     ", aformat=" ..
@@ -84,20 +101,9 @@ local function cycle_visualizer()
                         ":attack=0.033" ..
                         ":tlength='st(0,0.17); 384*tc / (384 / ld(0) + tc*f /(1-ld(0))) + 384*tc / (tc*f / ld(0) + 384 /(1-ld(0)))'" ..
                     ", format=rgba" ..
-                    ", lut='a=val*0.3' [v];" ..
+                    ", lut='a=val*" .. opacity .. "' [v];" ..
                     "[vid1][v] overlay=format=auto [vo]"
         mp.set_property("options/lavfi-complex", lavfi)
-    else
-        if file_path then
-            -- Load the video from the beginning
-            mp.commandv("loadfile", file_path, "replace")
-            mp.set_property_number("time-pos", playback_position)
-
-            -- Delayed removal of the filter
-            mp.add_timeout(0.1, function()
-                mp.set_property("options/lavfi-complex", "")
-            end)
-        end
     end
 end
 
