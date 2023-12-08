@@ -44,7 +44,7 @@ local visualizer_on = false
 local file_path = nil
 local playback_position = 0
 
-mp.add_key_binding("Ctrl+b", "cycle-visualizer", function()
+mp.add_key_binding("Ctrl+v", "cycle-visualizer", function()
     local width = mp.get_property_native("width")
     local height = mp.get_property_native("height")
     local fps = 60
@@ -81,7 +81,8 @@ mp.add_key_binding("Ctrl+b", "cycle-visualizer", function()
                         ":tc=0.33" ..
                         ":attack=0.033" ..
                         ":tlength='st(0,0.17); 384*tc / (384 / ld(0) + tc*f /(1-ld(0))) + 384*tc / (tc*f / ld(0) + 384 /(1-ld(0)))'" ..
-                    ", format=rgba, colorkey=black [v];" ..
+                    ", format=rgba" ..
+                    ", lut='a=val*0.3' [v];" ..
                     "[vid1][v] overlay=format=auto [vo]"
         mp.set_property("options/lavfi-complex", lavfi)
     else
