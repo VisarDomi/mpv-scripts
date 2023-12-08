@@ -43,7 +43,10 @@ local axis_0 = "image/png;base64," ..
 "+ItXxkPv9Prs7s9mT9YpIHepTvvjrYfD4Waempm7tDj/+QVWl7fo6p1en939wcfXH3luweKifLMfmbFf7/T67O6Pe/ary/MefWH89E6vz+7+4OPpU7Pyls38pfXzi67e6fXZ29/kzOV5OrMLXb3T67O7P1sdBxc4" ..
 "HA6Hw+FwOBwOhz8UDgRwOBwOh8PhcDgcDn8oHAjgcDgcDofD4XA4HP4w+P8AQEuXMXpD8/kAAAAASUVORK5CYII="
 
-local opacity_level = 0 -- Initialize with 1 to start the cycle
+local visualizer_on = false
+local file_path = nil
+local playback_position = 0
+local opacity_level = 0 -- Keep track of the opacity level
 
 local function cycle_visualizer(increment)
     local width = mp.get_property_native("width")
@@ -51,17 +54,33 @@ local function cycle_visualizer(increment)
     local fps = mp.get_property_native("display-fps")
     local count = math.ceil(width * 180 / 1920 / fps)
 
-    -- Adjust opacity level and ensure it cycles between 0 and 5
     if increment then
         opacity_level = (opacity_level + 1) % 6
     else
         opacity_level = (opacity_level - 1) % 6
     end
 
-    -- Calculate the opaqueness percentage
-    local opacity = opacity_level * 20 / 100
+    if opacity_level == 0 then
+        -- Turn off the visualizer
+        visualizer_on = false
+        if file_path then
+            -- Load the video from the beginning
+            mp.commandv("loadfile", file_path, "replace")
+            mp.set_property_number("time-pos", playback_position)
 
-    local lavfi = "[aid1] asplit [ao][a];" ..
+            -- Delayed removal of the filter
+            mp.add_timeout(0.1, function()
+                mp.set_property("options/lavfi-complex", "")
+            end)
+        end
+    else
+        -- Calculate the opaqueness percentage
+        local opacity = opacity_level * 20 / 100
+
+        visualizer_on = true
+        file_path = mp.get_property("path")
+        playback_position = mp.get_property_number("time-pos")
+        local lavfi = "[aid1] asplit [ao][a];" ..
                     "[a] afifo" ..
                     ", aformat=" ..
                         "channel_layouts=stereo" ..
@@ -89,7 +108,8 @@ local function cycle_visualizer(increment)
                     ", format=rgba" ..
                     ", lut='a=val*" .. opacity .. "' [v];" ..
                     "[vid1][v] overlay=format=auto [vo]"
-    mp.set_property("options/lavfi-complex", lavfi)
+        mp.set_property("options/lavfi-complex", lavfi)
+    end
 end
 
 -- Key bindings for incrementing and decrementing opacity level
