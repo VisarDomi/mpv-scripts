@@ -45,15 +45,19 @@ local axis_0 = "image/png;base64," ..
 local visualizer_on = false
 local file_path = nil
 local playback_position = 0
-local opacity_level = 0 -- New variable to keep track of the opacity level
+local opacity_level = 0 -- Keep track of the opacity level
 
-local function cycle_visualizer()
+local function cycle_visualizer(increment)
     local width = mp.get_property_native("width")
     local height = mp.get_property_native("height")
     local fps = mp.get_property_native("display-fps")
     local count = math.ceil(width * 180 / 1920 / fps)
 
-    opacity_level = (opacity_level + 1) % 6 -- Increment and cycle the opacity level
+    if increment then
+        opacity_level = (opacity_level + 1) % 6
+    else
+        opacity_level = (opacity_level - 1) % 6
+    end
 
     if opacity_level == 0 then
         -- Turn off the visualizer
@@ -107,4 +111,6 @@ local function cycle_visualizer()
     end
 end
 
-mp.add_key_binding(key_binding, "cycle-visualizer", cycle_visualizer)
+-- Key bindings for incrementing and decrementing opacity level
+mp.add_key_binding("Ctrl+v", "increase_opacity", function() cycle_visualizer(true) end)
+mp.add_key_binding("Ctrl+Shift+v", "decrease_opacity", function() cycle_visualizer(false) end)
