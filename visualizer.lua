@@ -49,7 +49,7 @@ local playback_position = 0
 local function cycle_visualizer()
     local width = mp.get_property_native("width")
     local height = mp.get_property_native("height")
-    local fps = 60
+    local fps = mp.get_property_native("display-fps")
     local count = math.ceil(width * 180 / 1920 / fps)
 
     visualizer_on = not visualizer_on
