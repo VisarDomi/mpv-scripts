@@ -12,8 +12,9 @@ mp.add_key_binding("Ctrl+b", "cycle-visualizer", function()
         file_path = mp.get_property("path")
         playback_position = mp.get_property_number("time-pos")
 
-        local lavfi = "[aid1] asplit [ao][a];" ..
-                    "[a] showcqt=s=" .. width .. "x" .. height .. ", format=rgba, colorkey=black [v];" ..
+        local lavfi = "[aid1] asplit [ao][a];" .. 
+                    "[a] afifo, aformat=channel_layouts=stereo [a_stereo];" ..
+                    "[a_stereo] showcqt=s=" .. width .. "x" .. height .. ", format=rgba, colorkey=black [v];" ..
                     "[vid1][v] overlay=format=auto [vo]"
         mp.set_property("options/lavfi-complex", lavfi)
     else
