@@ -1,3 +1,5 @@
+local key_binding = "Ctrl+v"
+
 local axis_0 = "image/png;base64," ..
 "iVBORw0KGgoAAAANSUhEUgAAB4AAAAAgCAQAAABZEK0tAAAACXBIWXMAAA7EAAAOxAGVKw4bAAASO0lEQVR42u2de2wU1xXGV/IfSJEqVUJCQrIUISFFiiqhSFWkKFKFokpB1TqxHROT8ApueDgEE9u4MW4TSqFA" ..
 "3TSUQmkSChRwII6BkAQCDSYlBtc1hiSA4/CyMcYGtsZvY3t3vXu719vVPjxzz71zd+wBvnOkdvHZ78w5v7mZmbt7Z9blgsFgMBgMBoPBYDAYDAaDwWAwGAwGg8FgMBgMBoPBYDAYDAaDwWCw+9HYBFbKboe8lE1A" ..
@@ -44,7 +46,7 @@ local visualizer_on = false
 local file_path = nil
 local playback_position = 0
 
-mp.add_key_binding("Ctrl+v", "cycle-visualizer", function()
+local function cycle_visualizer()
     local width = mp.get_property_native("width")
     local height = mp.get_property_native("height")
     local fps = 60
@@ -97,4 +99,6 @@ mp.add_key_binding("Ctrl+v", "cycle-visualizer", function()
             end)
         end
     end
-end)
+end
+
+mp.add_key_binding(key_binding, "cycle-visualizer", cycle_visualizer)
